@@ -295,8 +295,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =========================
 # BOT START
 # =========================
-import os
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_TOKEN = "8354077262:AAFxr_9hCn8pMAivXf-lqk3Szom43Jqlm2w"
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
