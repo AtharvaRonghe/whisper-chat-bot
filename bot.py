@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -8,6 +10,10 @@ from telegram.ext import (
     filters
 )
 from telegram.constants import ChatAction
+from telegram.request import HTTPXRequest
+
+# Load environment variables
+load_dotenv()
 
 # DATABASE
 from database_utils import init_db, upsert_user, get_user, add_report
@@ -293,17 +299,47 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # =========================
+# HELP
+# =========================
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_text = (
+        "📖 *Whisper Chat Help*\n\n"
+        "*Available Commands:*\n"
+        "/start - Begin and set your profile\n"
+        "/find - Find a chat partner\n"
+        "/stop - End current chat\n"
+        "/settings - Change your profile\n"
+        "/status - View your profile\n"
+        "/help - Show this help message\n\n"
+        "*How it works:*\n"
+        "1️⃣ Use /start to set up your profile\n"
+        "2️⃣ Use /find to find a random partner\n"
+        "3️⃣ Chat anonymously\n"
+        "4️⃣ Use /stop to end the chat\n"
+        "5️⃣ Use /settings to modify your preferences\n\n"
+        "🚨 Report button available during chats for inappropriate behavior"
+    )
+    await update.message.reply_text(help_text, parse_mode="Markdown")
+
+# =========================
 # BOT START
 # =========================
-BOT_TOKEN = "8354077262:AAFxr_9hCn8pMAivXf-lqk3Szom43Jqlm2w"
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8354077262:AAFxr_9hCn8pMAivXf-lqk3Szom43Jqlm2w")
 
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+if not BOT_TOKEN:
+    raise ValueError("❌ BOT_TOKEN environment variable is not set!")
+
+# Create request with longer timeout (default is 5 seconds, we use 15)
+request = HTTPXRequest(connect_timeout=15.0, read_timeout=15.0, write_timeout=15.0, pool_timeout=15.0)
+
+app = ApplicationBuilder().token(BOT_TOKEN).request(request).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("find", find))
 app.add_handler(CommandHandler("stop", stop))
 app.add_handler(CommandHandler("settings", settings))
 app.add_handler(CommandHandler("status", status))
+app.add_handler(CommandHandler("help", help_command))
 
 app.add_handler(CallbackQueryHandler(set_gender, pattern="^gender_"))
 app.add_handler(CallbackQueryHandler(toggle_nsfw, pattern="^nsfw_"))

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: whisper-chat-bot
+    runtime: python
+    pythonVersion: 3.13
+    startCommand: "python bot.py"
+    envVars:
+      - key: BOT_TOKEN
+        scope: run
+        value: ${BOT_TOKEN}
