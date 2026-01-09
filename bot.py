@@ -349,5 +349,23 @@ app.add_handler(CallbackQueryHandler(report_user, pattern="^report$"))
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, relay))
 
+
+from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class HealthCheck(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running")
+
+def run_health_server():
+    server = HTTPServer(('0.0.0.0', 10000), HealthCheck)
+    server.serve_forever()
+
+# Start health check server in background
+Thread(target=run_health_server, daemon=True).start()
+
 print("🫧 Whisper Chat is live and running...")
 app.run_polling()
+
